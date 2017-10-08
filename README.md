@@ -8,9 +8,9 @@ source: Wikipedia - https://en.wikipedia.org/wiki/Travelling_salesman_problem
 
 Given a text file with list of cities as
 
-number_of_cities <br/><br/>
-city_name_1 x_position y_position
-city_name_2 x_position y_position
+number_of_cities <br/>
+city_name_1 x_position y_position <br/>
+city_name_2 x_position y_position <br/>
 ...
   
 the program solves the TSP problem by returning the path of the cities to travel in order, the cost to travel this path, and the number of states generated in the State tree.
