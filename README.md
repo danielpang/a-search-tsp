@@ -1,4 +1,4 @@
-# A_Search_TSP
+# A Search TSP
 Implements the A* Search Algorithm to solve the Traveling Salesperson Problem.
 
 The Traveling Salesperson Problem is defined as...
