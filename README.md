@@ -1,12 +1,12 @@
 # A Search TSP
-Implements the A* Search Algorithm to solve the Traveling Salesperson Problem.
+Implements the A* Search Algorithm to approximate the Traveling Salesperson Problem.
 
 The Traveling Salesperson Problem is defined as...
 
 "Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?"
 source: Wikipedia - https://en.wikipedia.org/wiki/Travelling_salesman_problem
 
-Given a text file with list of cities as:
+Given an input text file with list of cities as:
 
 number_of_cities <br/>
 city_name_1 x_position y_position <br/>
