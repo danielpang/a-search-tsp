@@ -15,4 +15,4 @@ city_name_2 x_position y_position <br/>
   
 the program solves the TSP problem by returning the path of the cities to travel in order, the cost to travel this path, and the number of states generated in the State tree.
 
-Usage "python a_search.py example.txt"
+Usage: "python a_search.py example.txt"
