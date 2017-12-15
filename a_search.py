@@ -12,54 +12,65 @@ class Node:
 		self.x = x
 		self.y = y
 
-# Class for the states
-
+# Class for the search states
+# A* search uses these states to store possible traversal of city nodes
+# and to determine which path to take based on backward and forward costs i.e. f(n) = g(n) + h(n)
 class State:
 	def __init__(self, u_nodes=[], v_nodes=[], current_node=None, f_score=sys.maxsize):
 		self.unvisited_nodes = u_nodes
 		self.visited_nodes = v_nodes
 		self.node = current_node
 		self.f_score = f_score
-		self.leaf = True
 
-# Method to find the node in Q with the lowest weight
+# Helper function for Prim's algorithm
+# Method to find the node in PriorityQueue Q with the lowest edge weight
 def min_key(nodes, key, mst_set):
 	minimum = sys.maxsize
+	# For all the nodes in the PriorityQueue
 	for node in nodes:
+		# If the key is smaller than the minimum weight and is NOT in the MST
 		if key[node.name] < minimum and mst_set[node.name] == False:
 			minimum = key[node.name]
 			min_index = node
 	return min_index
 
 # Prim's algorithm to find the minimum spanning tree of all unvisited nodes
+# This is used as a part of the heuristic function to estimate the cost it takes
+# to travel to all the unvisited nodes (forward cost)
 def prim(unvisited_nodes, edges):
 	nodes = copy.deepcopy(unvisited_nodes)
+	# Initialize all dicts, initially all keys will be maxsize and predecessor will be None
 	key = {}
 	pred = {}
 	mst_set = {}
-	# Initialize all dict
 	for n in nodes:
 		pred[n.name] = None
 		key[n.name] = sys.maxsize
 		mst_set[n.name] = False
+	# Declare dict values for starting node A
 	key[nodes[0].name] = 0
 	pred[nodes[0].name] = None
 
 	for n in nodes:
-		# Find the node with the smallest weight
+		# Find the node with the smallest edge weight
 		u = min_key(nodes, key, mst_set)
+		# Add it to the minimum spanning tree (MST) by setting flag to true
 		mst_set[u.name] = True
+		# Go through all the neighbours of node u, which in this problem is all the other cities
 		for node in nodes:
+			# If neighbour of u is not in the MST, and current key is larger than the edge between u and neighbour
 			if node.name != u and mst_set[node.name] == False and key[node.name] > edges[node.name, u.name]:
+				# Update key of neighbour node and make u the predecessor of the neighbour
 				key[node.name] = edges[node.name,u.name]
 				pred[node.name] = u
+	# Calculate the cost of our Minimum spanning tree
 	mst_cost = 0
 	for key in pred:
 		if pred[key] != None:
 			mst_cost += edges[key, pred[key].name]
 	return mst_cost
 
-# Heuristic function
+# Heuristic function for A* Search
 # h(n) at node n is the minimum spanning tree of remaining cities +
 # distance to the NEAREST unvisited node + nearest distance from unvisted node
 # to the starting node
@@ -85,6 +96,7 @@ def h(cur_node, unvisited_nodes, edges):
 # cur_path: is the list of nodes visited in order
 def g(cur_path, edges):
 	cost = 0
+	# Find the cost of the path by calculating the edges between each node in the path
 	for i in range(0, len(cur_path) - 1):
 		cost += edges[cur_path[i].name, cur_path[i+1].name]
 	return cost
@@ -96,22 +108,21 @@ def f(cur_path, cur_node, unvisited_nodes, edges):
 
 # Determines the cost of the chosen path
 def build_path(path, edges):
-	cost = 0
+	path_cost = 0
 	lst = []
 	freq = {}
 	for i in range(0, len(path) - 1):
 		lst.append(path[i].name)
-		cost += edges[path[i].name, path[i+1].name]
+		path_cost += edges[path[i].name, path[i+1].name]
 	# Add cost from last city to start city
 	lst.append('A')
-	cost += edges[path[len(path) - 1].name, path[0].name]
-	return (lst,cost)
+	path_cost += edges[path[len(path) - 1].name, path[0].name]
+	return {"path": lst, "cost": path_cost}
 
 # Remove node from the list of nodes
-# Wrote my own function because I wasn't sure what Python was doing
-def remove_node(unvisited_nodes, city):
-	new_lst = copy.deepcopy(unvisited_nodes)
-	# print("Remove", city)
+# Returns a new list without the given node
+def remove_node(nodes, city):
+	new_lst = copy.deepcopy(nodes)
 	for i in range(0, len(new_lst)):
 		if new_lst[i].name == city:
 			new_lst.pop(i)
@@ -139,15 +150,13 @@ def a_search(unvisited_nodes, edges):
 		# If we have no more nodes to visited, we have reached goal state
 		if len(cur_state.unvisited_nodes) == 0:
 			num_states += 1 # for the goal state
-			print("Number of states generated", num_states)
-			return num_states
+			return build_path(cur_state.visited_nodes, edges)
 		# Expand the nodes, adding the next level of nodes
 		for unvisited in cur_state.unvisited_nodes:
 			num_states += 1
 			visited = copy.deepcopy(cur_state.visited_nodes)
 			visited.append(unvisited)
 			temp_lst = remove_node(cur_state.unvisited_nodes, unvisited.name)
-			#print(len(temp_lst))
 			# Calculate f_score for this new state
 			f_score = f(visited, unvisited, temp_lst, edges)
 			s = State(temp_lst, visited, unvisited, f_score)
@@ -162,10 +171,8 @@ def create_nodes(file):
 	for line in file:
 		line = line.rstrip('\n')
 		vals = line.split()
-		#print(vals)
 		n = Node(str(vals[0]), int(vals[1]), int(vals[2]))
 		lst.append(n)
-	#print("Finished creating nodes")
 	return lst
 
 # Calculates the cost (Euclidean distance) of travel
@@ -178,15 +185,17 @@ def calculate_cost(lst):
 			b = (other_node.x,other_node.y)
 			dst = distance.euclidean(a,b)
 			dict[node.name,other_node.name] = dst
-	#print("Finished calculating distances")
 	return dict
 
 def main():
+	# Example use of 'a_search'
 	# Open file
 	file = open(sys.argv[1], 'r')
 	unvisited_nodes = create_nodes(file)
 	edge_costs = calculate_cost(unvisited_nodes)
-	print(a_search(unvisited_nodes, edge_costs))
+	results = (a_search(unvisited_nodes, edge_costs))
+	print("Path of Nodes to visit are", results['path'])
+	print("Cost of Path is", round(results['cost'],2))
 
 if __name__ == '__main__':
 	main()
