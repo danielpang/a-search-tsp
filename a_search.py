@@ -150,7 +150,9 @@ def a_search(unvisited_nodes, edges):
 		# If we have no more nodes to visited, we have reached goal state
 		if len(cur_state.unvisited_nodes) == 0:
 			num_states += 1 # for the goal state
-			return build_path(cur_state.visited_nodes, edges)
+			results = build_path(cur_state.visited_nodes, edges)
+			results["num_states"] = num_states
+			return results
 		# Expand the nodes, adding the next level of nodes
 		for unvisited in cur_state.unvisited_nodes:
 			num_states += 1
